@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WavySync</title>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ggwave@0.4.0/ggwave.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <header class="header">WavySync</header>
+
+      <main class="container">
+        <div class="mode-switch">
+          <button @click="mode = 'send'" :class="{ active: mode === 'send' }">
+            送信
+          </button>
+          <button @click="recieving" :class="{ active: mode === 'recieve' }">
+            受信
+          </button>
+        </div>
+
+        <div v-if="mode === 'send'" class="send-mode">
+          <textarea
+            v-model="message"
+            placeholder="送信する文字列を入力してください"
+          ></textarea>
+          <button @click="send">送信</button>
+        </div>
+
+        <div v-else class="receive-mode">
+          <p>受信中...</p>
+          <div class="received">{{ receivedMessage }}</div>
+        </div>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

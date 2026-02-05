@@ -1,4 +1,4 @@
-const { createApp, ref, onCreated, onMounted } = Vue;
+const { createApp, ref, onMounted } = Vue;
 
 let ggwave = null;
 let ggwaveInstance = null;
@@ -9,8 +9,6 @@ let rafId = null;
 // 初期化
 (async () => {
   ggwave = await ggwave_factory();
-  // var parameters = ggwave.getDefaultParameters();
-  // ggwaveInstance = ggwave.init(parameters);
 })();
 
 function init() {
@@ -20,7 +18,7 @@ function init() {
     const parameters = ggwave.getDefaultParameters();
     parameters.sampleRateInp = audioContext.sampleRate;
     parameters.sampleRateOut = audioContext.sampleRate;
-    instance = ggwave.init(parameters);
+    ggwaveInstance = ggwave.init(parameters);
   }
 }
 
@@ -36,7 +34,6 @@ const startMic = async () => {
     stream.value = await navigator.mediaDevices.getUserMedia({
       audio: true,
     });
-    console.log("マイクON");
   } catch (e) {
     console.error("マイク取得失敗", e);
   }
@@ -47,42 +44,20 @@ const stopMic = () => {
 
   stream.value.getTracks().forEach((track) => track.stop());
   stream.value = null;
-  console.log("マイクOFF");
 };
-const receivedMessage = ref("");
 
 const MODE = {
   SEND: "send",
-  RECIEVE: "recieve",
+  RECEIVE: "receive",
 };
-const mode = ref("");
+const receivedMessage = ref("");
+const mode = ref(MODE.SEND);
 const message = ref("");
+
 createApp({
   setup() {
-    return {
-      mode,
-      message,
-      receivedMessage,
-    };
-  },
-  created() {
-    this.mode = MODE.SEND;
-  },
-  mounted() {
-    // if ("serviceWorker" in navigator) {
-    //   navigator.serviceWorker.register("/sw.js");
-    // }
-  },
-  // watch: {
-  //   mode: async function (value) {
-  //     if (value === MODE.SEND) {
-  //       stopMic();
-  //     }
-  //   },
-  // },
-  methods: {
-    send() {
-      if (!this.message.trim()) {
+    const send = () => {
+      if (!message.value.trim()) {
         return;
       }
 
@@ -90,7 +65,7 @@ createApp({
 
       const waveform = ggwave.encode(
         ggwaveInstance,
-        this.message,
+        message.value,
         ggwave.ProtocolId.GGWAVE_PROTOCOL_AUDIBLE_FAST,
         10,
       );
@@ -107,16 +82,15 @@ createApp({
       source.buffer = buffer;
       source.connect(audioContext.destination);
       source.start();
-    },
-    recieving() {
-      this.mode = MODE.RECIEVE;
+    };
+
+    const recieving = () => {
+      mode.value = MODE.RECEIVE;
       init();
-      // await startMic();
 
       navigator.mediaDevices
         .getUserMedia({
           audio: {
-            // not sure if these are necessary to have
             echoCancellation: false,
             autoGainControl: false,
             noiseSuppression: false,
@@ -165,30 +139,26 @@ createApp({
                   rafId = null;
                 });
               }
-              // stopMic(mediaStream);
             }
           };
 
           mediaStream.connect(recorder);
           recorder.connect(audioContext.destination);
-
-          // const analyser = audioContext.createAnalyser();
-          // source.connect(analyser);
-
-          // const data = new Float32Array(analyser.fftSize);
-
-          // const listen = () => {
-          //   analyser.getFloatTimeDomainData(data);
-          //   const res = ggwaveInstance.decode(data);
-
-          //   if (res) {
-          //     this.receivedMessage = new TextDecoder().decode(res);
-          //     //   document.getElementById("receivedText").innerText =
-          //     //     new TextDecoder().decode(res);
-          //   }
-          //   requestAnimationFrame(listen);
-          // };
         });
-    },
+    };
+
+    onMounted(() => {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js");
+      }
+    });
+
+    return {
+      mode,
+      message,
+      receivedMessage,
+      send,
+      recieving,
+    };
   },
 }).mount("#app");

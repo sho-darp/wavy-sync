@@ -149,7 +149,12 @@ createApp({
 
     onMounted(() => {
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/sw.js");
+        navigator.serviceWorker
+          .register("sw.js")
+          .then(async (registration) => {})
+          .catch((err) => {
+            console.error("ServiceWorker registration failed: ", err);
+          });
       }
     });
 

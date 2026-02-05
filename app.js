@@ -56,6 +56,15 @@ const message = ref("");
 
 createApp({
   setup() {
+    const changeSendMode = () => {
+      if (mode.value === MODE.SEND) {
+        return;
+      }
+
+      mode.value = MODE.SEND;
+      stopMic();
+    };
+
     const send = () => {
       if (!message.value.trim()) {
         return;
@@ -85,6 +94,10 @@ createApp({
     };
 
     const recieving = () => {
+      if (mode.value === MODE.RECEIVE) {
+        return;
+      }
+
       mode.value = MODE.RECEIVE;
       init();
 
@@ -164,6 +177,7 @@ createApp({
       receivedMessage,
       send,
       recieving,
+      changeSendMode,
     };
   },
 }).mount("#app");

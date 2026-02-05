@@ -15,7 +15,7 @@
 
       <main class="container">
         <div class="mode-switch">
-          <button @click="mode = 'send'" :class="{ active: mode === 'send' }">
+          <button @click="changeSendMode" :class="{ active: mode === 'send' }">
             送信
           </button>
           <button @click="recieving" :class="{ active: mode === 'recieve' }">
